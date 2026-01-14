@@ -1,6 +1,4 @@
 from django.db import models
-
-from django.db import models
 from django.db.models import JSONField
 
 # see this for why textfield over varchar https://stackoverflow.com/questions/4848964/difference-between-text-and-varchar-character-varying
@@ -91,7 +89,6 @@ class Screen(models.Model):
         #     {"row_code": "B", "seat_type_id": 2, "seats": [1, 2, 3]}
         # ]
         # }
-    # (0 could act as a gap/aisle)
     seating_layout_template = JSONField() 
     total_capacity = models.IntegerField()
     

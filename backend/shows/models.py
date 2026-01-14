@@ -1,20 +1,33 @@
 from django.db import models
-
-from django.db import models
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 from infrastructure.models import Screen, ShowFormat, SeatType, Venue
-from events.models import Event
+from events.models import Event, Language
 
 class Show(models.Model):
     event = models.ForeignKey(Event, on_delete=models.PROTECT, related_name='shows')
-    screen = models.ForeignKey(Screen, on_delete=models.PROTECT, related_name='shows')
     venue = models.ForeignKey(Venue, on_delete=models.PROTECT, related_name='shows')
     
+    # Screen is optional: Movies use screens, concerts/sports use the venue broadly
+    screen = models.ForeignKey(
+        Screen, 
+        on_delete=models.PROTECT, 
+        related_name='shows',
+        null=True,
+        blank=True
+    )
     show_format = models.ForeignKey(
         ShowFormat, 
         on_delete=models.PROTECT, 
         null=True, 
+        blank=True
+    )
+    language = models.ForeignKey(
+        Language,
+        on_delete=models.PROTECT,
+        related_name='shows',
+        null=True,
         blank=True
     )
     
@@ -33,6 +46,7 @@ class Show(models.Model):
         1. If Event is a MOVIE, show_format is REQUIRED.
         2. If Event is NOT a MOVIE, show_format should be NULL.
         3. If show_format exists, the Screen must support it.
+        4. Language must be one of the Event's available languages.
         """
         # Ensure relationships exist before validating (handles form partial data)
         if not (hasattr(self, 'event') and hasattr(self, 'screen')):
@@ -57,6 +71,13 @@ class Show(models.Model):
             if not self.screen.supported_formats.filter(id=self.show_format.id).exists():
                 raise ValidationError({
                     'show_format': _(f"Screen '{self.screen.name}' does not support format '{self.show_format.name}'.")
+                })
+        
+        # Rule 4: Language validation
+        if self.language:
+            if not self.event.languages.filter(id=self.language.id).exists():
+                raise ValidationError({
+                    'language': _(f"Language '{self.language.name}' is not available for event '{self.event.title}'.")
                 })
                 
     def save(self, *args, **kwargs):
