@@ -124,6 +124,7 @@ class ShowSeat(models.Model):
         db_index=True
     )
     version = models.IntegerField(default=0)  # Optimistic locking
+    modified_at = models.DateTimeField(auto_now=True)
     
     class Meta:
         constraints = [
