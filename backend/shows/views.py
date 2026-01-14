@@ -219,7 +219,7 @@ def _fetch_seats_from_db(show_id: int) -> QuerySet[ShowSeat]:
         ShowSeat.objects
         .filter(show_id=show_id)
         .select_related('seat', 'seat__seat_type')
-        .order_by('seat__row', 'seat__number')
+        .order_by('seat__row', 'seat__seat_number')
     )
 
 def _serialize_seat(show_seat: ShowSeat) -> Dict:
@@ -229,9 +229,8 @@ def _serialize_seat(show_seat: ShowSeat) -> Dict:
     return {
         'id': show_seat.id,
         'row': show_seat.seat.row,
-        'number': show_seat.seat.number,
+        'number': show_seat.seat.seat_number,
         'type': show_seat.seat.seat_type.name,
-        # Ensure price is a string to preserve decimal precision in JSON
         'price': str(show_seat.price), 
         'is_available': show_seat.status == 'available'
     }

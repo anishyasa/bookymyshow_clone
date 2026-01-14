@@ -255,7 +255,9 @@ const MovieSchedule: React.FC = () => {
                     style={styles.timeButton}
                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 173, 181, 0.1)'}
                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                    onClick={() => alert(`Selected Show ID: ${show.id}`)}
+                    onClick={() => navigate(`/show/${show.id}/seats`, {
+                      state: { movieTitle, venueName: venue.name }
+                    })}
                   >
                     <span style={styles.timeText}>{formatTime(show.start_time)}</span>
                     <span style={styles.formatText}>{show.format} • {show.language}</span>

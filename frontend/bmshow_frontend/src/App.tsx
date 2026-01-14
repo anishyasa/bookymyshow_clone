@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './login';
 import MovieHomepage from './MovieHomepage';
 import MovieSchedule from './MovieSchedule';
+import SeatSelection from './SeatSelection';
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -47,6 +48,10 @@ const App = () => {
 
             {/* Redirect unknown routes to home */}
             <Route path="*" element={<Navigate to="/" />} />
+            <Route 
+              path="/show/:showId/seats" 
+              element={<SeatSelection />} 
+            />
           </Routes>
         </BrowserRouter>
       )}
