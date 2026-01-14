@@ -28,18 +28,20 @@ class MovieHomepageView(APIView):
     
     def get(self, request):
         """Handle GET request for movies homepage"""
-        # Parse query parameters
-        city_id = int(request.query_params['city_id'])
+        city_id = int(request.query_params.get('city_id', 1))
         date_str = request.query_params.get('date')
         language_filter = request.query_params.get('language')
         format_filter = request.query_params.get('format')
         
-        # Parse date if provided
         target_date = None
         if date_str:
             target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
-        
-        # Call service and return response
+
+        if not city_id:
+            return Response(
+                {"error": "Please provide a city_id (e.g. ?city_id=1)"}, 
+                status=400
+            )
         data = get_homepage_movies(
             city_id=city_id,
             target_date=target_date,
