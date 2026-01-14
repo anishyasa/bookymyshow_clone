@@ -86,7 +86,7 @@ const SeatSelection: React.FC = () => {
     const token = localStorage.getItem('access_token');
 
     try {
-      const response = await fetch('http://localhost:8000/api/bookings/', {
+      const response = await fetch('http://localhost:8000/api/bookings/book/', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -98,11 +98,25 @@ const SeatSelection: React.FC = () => {
         })
       });
 
-      if (!response.ok) throw new Error('Booking failed');
+      const data = await response.json(); // Parse response body first
 
-      setBookingSuccess(true);
+      if (response.ok) {
+        setBookingSuccess(true);
+      } else {
+        if (response.status === 409) {
+          // SeatUnavailableException
+          setBookingError(`Unavailable: ${data.detail || 'Some seats were just taken.'}`);
+          fetchSeats();
+          setSelectedSeatIds([]);
+        } else if (response.status === 402) {
+          // PaymentGatewayException
+          setBookingError(`Payment Failed: ${data.detail || 'Please check your card.'}`);
+        } else {
+          setBookingError(data.detail || 'Booking failed. Please try again.');
+        }
+      }
     } catch (err) {
-      setBookingError('Booking failed. Please try again.');
+      setBookingError('Network error. Check your connection.');
     } finally {
       setBooking(false);
     }
