@@ -1,0 +1,17 @@
+/* src/index.css */
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #222831; /* Match your bg color */
+  box-sizing: border-box;
+}
+
+#root {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: left; /* Default is often center, which breaks layouts */
+}
