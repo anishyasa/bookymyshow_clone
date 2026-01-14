@@ -1,6 +1,8 @@
 CineBook – Setup & Usage Guide
 
-This project consists of a backend (Django) and a frontend (Vite / React) application. Follow the steps below to run the project locally.
+This project consists of a backend (Django) and a frontend (Vite / React) application. Follow the steps below to run the project locally. Design document:
+
+https://docs.google.com/document/d/1_mMzjK4Vxrp8OKZD3Aj7CBBGYoE5PJV4a9Ae_NlyHaE/edit?usp=sharing
 
 Prerequisites
 
