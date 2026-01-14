@@ -2,7 +2,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
-from infrastructure.models import Screen, ShowFormat, SeatType, Venue
+from infrastructure.models import Screen, ShowFormat, SeatType, Venue, Seat
 from events.models import Event, Language
 
 class Show(models.Model):
@@ -103,3 +103,35 @@ class ShowSeatTypePrice(models.Model):
     
     def __str__(self):
         return f"{self.show} - {self.seat_type.name}: {self.price}"
+    
+class ShowSeat(models.Model):
+    """Per-show availability and pricing - EPHEMERAL"""
+    STATUS_CHOICES = [
+        ('available', 'Available'),
+        ('reserved', 'Reserved'),
+        ('booked', 'Booked'),
+        ('blocked', 'Blocked'),
+    ]
+    
+    show = models.ForeignKey(Show, on_delete=models.CASCADE, related_name='show_seats')
+    seat = models.ForeignKey(Seat, on_delete=models.PROTECT)
+    
+    price = models.DecimalField(max_digits=8, decimal_places=2)
+    status = models.CharField(
+        max_length=20, 
+        choices=STATUS_CHOICES, 
+        default='available', 
+        db_index=True
+    )
+    version = models.IntegerField(default=0)  # Optimistic locking
+    
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['show', 'seat'], name='unique_show_seat')
+        ]
+        indexes = [
+            models.Index(fields=['show', 'status']),
+        ]
+
+    def __str__(self):
+        return f"{self.show} - {self.seat}"

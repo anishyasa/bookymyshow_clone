@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import JSONField
+from django.db.models import JSONField, UniqueConstraint
 
 # see this for why textfield over varchar https://stackoverflow.com/questions/4848964/difference-between-text-and-varchar-character-varying
 
@@ -98,3 +98,17 @@ class Screen(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.venue.name}"
+    
+class Seat(models.Model):
+    """Physical seat in a screen"""
+    screen = models.ForeignKey(Screen, on_delete=models.CASCADE, related_name='seats')
+    seat_type = models.ForeignKey(SeatType, on_delete=models.PROTECT)
+    
+    row = models.TextField()
+    seat_number = models.IntegerField()
+    is_active = models.BooleanField(default=True)  # For maintenance blocking
+    
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=['screen', 'row', 'seat_number'], name='unique_seat_per_screen')
+        ]
