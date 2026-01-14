@@ -6,13 +6,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, serializers
 
+from typing import List, Dict
 import datetime
 from collections import defaultdict
 from typing import List, Dict, Any, Tuple, Optional
 
-from shows.models import Show
+from shows.models import Show, ShowSeat
 from infrastructure.models import Venue
-
 
 class ScheduleFilterSerializer(serializers.Serializer):
     """
@@ -193,3 +193,51 @@ def _serialize_show(show: Show) -> Dict[str, Any]:
         "format": show.show_format.name if show.show_format else None,
         "language": show.language.name if show.language else None,
     }
+
+
+def get_show_seat_map(show_id: int) -> List[Dict]:
+    """
+    Returns the public seat map for a show.
+    Relying purely on ShowSeat.status for availability.
+    
+    Status Mapping:
+    - 'available' -> is_available: True
+    - 'booked'    -> is_available: False
+    - 'blocked'   -> is_available: False (Assumes bg worker cleans these up)
+    """
+    seats = _fetch_seats_from_db(show_id)
+    return [
+        _serialize_seat(seat) 
+        for seat in seats
+    ]
+
+def _fetch_seats_from_db(show_id: int) -> QuerySet[ShowSeat]:
+    """
+    Fetches all seats for the show, joining relevant Seat and SeatType data.
+    """
+    return (
+        ShowSeat.objects
+        .filter(show_id=show_id)
+        .select_related('seat', 'seat__seat_type')
+        .order_by('seat__row', 'seat__number')
+    )
+
+def _serialize_seat(show_seat: ShowSeat) -> Dict:
+    """
+    Transforms a ShowSeat model instance into a clean dictionary.
+    """
+    return {
+        'id': show_seat.id,
+        'row': show_seat.seat.row,
+        'number': show_seat.seat.number,
+        'type': show_seat.seat.seat_type.name,
+        # Ensure price is a string to preserve decimal precision in JSON
+        'price': str(show_seat.price), 
+        'is_available': show_seat.status == 'available'
+    }
+
+
+class ShowSeatListView(APIView):
+    def get(self, request, show_id):
+        data = get_show_seat_map(show_id=show_id)
+        return Response(data)
