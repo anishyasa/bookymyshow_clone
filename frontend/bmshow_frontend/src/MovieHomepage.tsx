@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // --- Types ---
 interface Movie {
@@ -21,15 +22,24 @@ interface HomepageResponse {
   };
 }
 
-const MovieHomepage = () => {
+interface Props {
+  onLogout: () => void;
+}
+
+const MovieHomepage:React.FC<Props> = ({onLogout}) => {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
-  
-  // Defaulting to Bangalore (ID: 1)
   const [selectedCityId, setSelectedCityId] = useState<number>(1);
+  const navigate = useNavigate()
 
-  // Hardcoded cities for the dropdown
+  const handleMovieClick = (movie: Movie) => {
+    navigate(`/movie/${movie.id}?city_id=${selectedCityId}`, {
+      state: { movieTitle: movie.title }
+    });
+  };
+
+
   const cities = [
     { id: 1, name: 'Bangalore' },
   ];
@@ -202,15 +212,20 @@ const MovieHomepage = () => {
       {/* Navbar */}
       <nav style={styles.navBar}>
         <div style={styles.logo}>CineBook</div>
-        <select 
-          value={selectedCityId} 
-          onChange={handleCityChange} 
-          style={styles.select}
-        >
-          {cities.map(city => (
-            <option key={city.id} value={city.id}>{city.name}</option>
-          ))}
-        </select>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <select 
+            value={selectedCityId} 
+            onChange={handleCityChange} 
+            style={styles.select}
+          >
+            {cities.map(city => (
+              <option key={city.id} value={city.id}>{city.name}</option>
+            ))}
+          </select>
+          <button onClick={onLogout} style={{...styles.select, cursor: 'pointer'}}>
+            Logout
+          </button>
+        </div>
       </nav>
 
       {/* Main Content */}
@@ -250,7 +265,10 @@ const MovieHomepage = () => {
                     ))}
                   </div>
 
-                  <button style={styles.bookButton}>
+                  <button 
+                    style={styles.bookButton}
+                    onClick={() => handleMovieClick(movie)}  // Add this!
+                  >
                     {movie.show_count} Shows Available
                   </button>
                 </div>
