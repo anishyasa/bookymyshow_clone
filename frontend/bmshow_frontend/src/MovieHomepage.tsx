@@ -32,7 +32,6 @@ const MovieHomepage = () => {
   // Hardcoded cities for the dropdown
   const cities = [
     { id: 1, name: 'Bangalore' },
-    { id: 2, name: 'Mumbai' }
   ];
 
   // --- Palette ---
